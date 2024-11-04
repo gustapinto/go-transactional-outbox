@@ -11,6 +11,7 @@ services:
       - go-transactional-outbox-network
     environment:
       POSTGRES_DSN: "postgresql://go-transactional-outbox:go-transactional-outbox@db:5432/go-transactional-outbox?sslmode=disable"
+      KAFKA_SEEDS: broker:9092
 
   db:
     image: postgres:16.3-alpine
@@ -28,16 +29,30 @@ services:
   broker:
     image: docker.io/bitnami/kafka:3.8.1
     container_name: go-transactional-outbox-broker
+    restart: unless-stopped
     ports:
       - 9092:9092
     networks:
       - go-transactional-outbox-network
     volumes:
-      - ./kafka_data:/bitnami:Z
-      - ./:/app:Z
+      - ./kafka_data:/bitnami
+      - ./:/app
     environment:
-      ALLOW_PLAINTEXT_LISTENER: "yes"
+      # KRaft settings
+      KAFKA_CFG_NODE_ID: 0
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@broker:9093
+      # Listeners
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
 
 networks:
   go-transactional-outbox-network:
     driver: bridge
+
+volumes:
+  kafka_data:
+    driver: local

@@ -32,10 +32,14 @@ var mockedOrders = []model.CreateOrderPayload{
 	},
 }
 
+var (
+	PostgresDSN = os.Getenv("POSTGRES_DSN")
+)
+
 func main() {
 	log.Println("Starting Order Service")
 
-	db, err := postgres.OpenDatabaseConnection(os.Getenv("POSTGRES_DSN"))
+	db, err := postgres.OpenDatabaseConnection(PostgresDSN)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -45,12 +49,8 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	orderRepository := postgres.Order{
-		DB: db,
-	}
-	orderService := service.Order{
-		OrderRepository: orderRepository,
-	}
+	orderRepository := postgres.Order{DB: db}
+	orderService := service.Order{OrderRepository: orderRepository}
 
 	for i, mockedOrder := range mockedOrders {
 		id, err := orderService.Create(mockedOrder.Title, mockedOrder.Value)
