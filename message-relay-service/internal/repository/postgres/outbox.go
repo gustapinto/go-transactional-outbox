@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/gustapinto/go-transactional-outbox/outbox-service/internal/model"
+	"github.com/gustapinto/go-transactional-outbox/message-relay-service/internal/model"
 )
 
 type Outbox struct {
@@ -21,7 +21,7 @@ func (o Outbox) GetNonProcessedOutboxEvents(ctx context.Context) ([]model.Outbox
 		event_type,
 		data
 	FROM
-		outbox
+		"order_service_schema"."outbox"
 	WHERE
 		processed_at IS NULL
 	ORDER BY
@@ -50,7 +50,7 @@ func (o Outbox) GetNonProcessedOutboxEvents(ctx context.Context) ([]model.Outbox
 func (o Outbox) SetOutboxEventAsProcessed(ctx context.Context, id uuid.UUID) error {
 	query := `
 	UPDATE
-		outbox
+		"order_service_schema"."outbox"
 	SET
 		processed_at = $1
 	WHERE

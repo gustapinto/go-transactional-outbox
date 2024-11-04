@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/google/uuid"
-	"github.com/gustapinto/go-transactional-outbox/outbox-service/internal/model"
+	"github.com/gustapinto/go-transactional-outbox/message-relay-service/internal/model"
 )
 
 type OutboxRepository interface {

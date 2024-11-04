@@ -4,32 +4,21 @@ import (
 	"log"
 	"os"
 
-	"github.com/gustapinto/go-transactional-outbox/order-service/internal/model"
 	"github.com/gustapinto/go-transactional-outbox/order-service/internal/repository/postgres"
 	"github.com/gustapinto/go-transactional-outbox/order-service/internal/service"
 )
 
-var mockedOrders = []model.CreateOrderPayload{
-	{
-		Title: "Example order 1",
-		Value: 10.00,
-	},
-	{
-		Title: "Example order 2",
-		Value: 20.50,
-	},
-	{
-		Title: "Example order 3",
-		Value: 25.00,
-	},
-	{
-		Title: "Example order 4",
-		Value: -25.00,
-	},
-	{
-		Title: "Example order 5",
-		Value: 5.75,
-	},
+var mockedOrders = []struct {
+	Title    string
+	Product  string
+	Quantity int64
+	Value    float64
+}{
+	{Title: "Example order 1", Product: "PRODUCT_1", Quantity: 1, Value: 10.00},
+	{Title: "Example order 2", Product: "PRODUCT_1", Quantity: 3, Value: 30.00},
+	{Title: "Example order 3", Product: "PRODUCT_1", Quantity: 5, Value: 50.00},
+	{Title: "Example order 4", Product: "PRODUCT_2", Quantity: 10, Value: 150.00},
+	{Title: "Example order 5", Product: "PRODUCT_3", Quantity: 2, Value: 7.50},
 }
 
 var (
@@ -53,7 +42,7 @@ func main() {
 	orderService := service.Order{OrderRepository: orderRepository}
 
 	for i, mockedOrder := range mockedOrders {
-		id, err := orderService.Create(mockedOrder.Title, mockedOrder.Value)
+		id, err := orderService.Create(mockedOrder.Title, mockedOrder.Product, mockedOrder.Quantity, mockedOrder.Value)
 		if err != nil {
 			log.Printf("Failed to create order %d, got error: %s", i, err.Error())
 			continue

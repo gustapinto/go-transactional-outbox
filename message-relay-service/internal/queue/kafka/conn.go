@@ -23,7 +23,7 @@ func OpenQueueConnection(seeds []string) (*kgo.Client, error) {
 
 func InitializeQueue(client *kgo.Client) error {
 	partitions := int32(1)
-	replicationFactor := int16(len(client.DiscoveredBrokers()))
+	replicationFactor := int16(len(client.SeedBrokers()))
 	configs := map[string]*string{}
 	topics := []string{
 		"ORDER-CREATED-TOPIC",

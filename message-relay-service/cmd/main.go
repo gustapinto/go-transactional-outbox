@@ -6,10 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gustapinto/go-transactional-outbox/outbox-service/internal/processor"
-	"github.com/gustapinto/go-transactional-outbox/outbox-service/internal/queue/kafka"
-	"github.com/gustapinto/go-transactional-outbox/outbox-service/internal/repository/postgres"
-	"github.com/gustapinto/go-transactional-outbox/outbox-service/internal/service"
+	"github.com/gustapinto/go-transactional-outbox/message-relay-service/internal/queue/kafka"
+	"github.com/gustapinto/go-transactional-outbox/message-relay-service/internal/repository/postgres"
+	"github.com/gustapinto/go-transactional-outbox/message-relay-service/internal/service"
 )
 
 var (
@@ -26,10 +25,6 @@ func main() {
 	}
 	defer db.Close()
 
-	if err := postgres.InitializeDatabase(db); err != nil {
-		log.Fatalln(err)
-	}
-
 	kafkaClient, err := kafka.OpenQueueConnection(KafkaSeeds)
 	if err != nil {
 		log.Fatalln(err)
@@ -42,7 +37,7 @@ func main() {
 
 	outboxRepository := postgres.Outbox{DB: db}
 	outboxService := service.Outbox{OutboxRepository: outboxRepository}
-	orderCreatedEventProcessor := processor.OrderCreated{KafkaClient: kafkaClient}
+	orderCreatedEventProcessor := kafka.OrderCreatedProcessor{KafkaClient: kafkaClient}
 
 	processorMapping := map[string]service.OutboxEventProcessor{
 		"ORDER_CREATED": orderCreatedEventProcessor,
