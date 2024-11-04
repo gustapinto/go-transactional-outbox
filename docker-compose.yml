@@ -1,0 +1,43 @@
+services:
+  go:
+    image: mcr.microsoft.com/devcontainers/go:1-1.23-bookworm
+    tty: true
+    container_name: go-transactional-outbox-go
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/go-transactional-outbox/app
+    networks:
+      - go-transactional-outbox-network
+    environment:
+      POSTGRES_DSN: "postgresql://go-transactional-outbox:go-transactional-outbox@db:5432/go-transactional-outbox?sslmode=disable"
+
+  db:
+    image: postgres:16.3-alpine
+    container_name: go-transactional-outbox-db
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    networks:
+      - go-transactional-outbox-network
+    environment:
+      POSTGRES_USER: go-transactional-outbox
+      POSTGRES_PASSWORD: go-transactional-outbox
+      POSTGRES_DB: go-transactional-outbox
+
+  broker:
+    image: docker.io/bitnami/kafka:3.8.1
+    container_name: go-transactional-outbox-broker
+    ports:
+      - 9092:9092
+    networks:
+      - go-transactional-outbox-network
+    volumes:
+      - ./kafka_data:/bitnami:Z
+      - ./:/app:Z
+    environment:
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+
+networks:
+  go-transactional-outbox-network:
+    driver: bridge
