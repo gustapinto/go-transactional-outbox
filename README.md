@@ -4,3 +4,15 @@ A implementation of the [transactional outbox messaging pattern](https://microse
 
 ![](https://raw.githubusercontent.com/gustapinto/go-transactional-outbox/main/docs/go-transactional-outbox-dark.jpg#gh-dark-mode-only)
 ![](https://raw.githubusercontent.com/gustapinto/go-transactional-outbox/main/docs/go-transactional-outbox-light.jpg#gh-light-mode-only)
+
+## Running the services
+
+### Requirements:
+
+1. Docker
+2. Docker Compose
+
+### Instructions:
+
+1. Clone this repository
+2. Start the docker containers with `docker compose up`
