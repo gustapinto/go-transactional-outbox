@@ -15,4 +15,5 @@ A implementation of the [transactional outbox messaging pattern](https://microse
 ### Instructions:
 
 1. Clone this repository
-2. Start the docker containers with `docker compose up`
+2. (Optional, only if using Linux) Run the `setup-kafka.sh` script with `./scripts/setup-kafka.sh` to configure `kafka_data/` directory permissions
+3. Start the docker containers with `docker compose up`
