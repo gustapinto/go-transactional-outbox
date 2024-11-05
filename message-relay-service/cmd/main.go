@@ -17,7 +17,7 @@ var (
 )
 
 func main() {
-	log.Println("Starting Outbox Service")
+	log.Println("Starting Message Relay Service")
 
 	db, err := postgres.OpenDatabaseConnection(PostgresDSN)
 	if err != nil {
