@@ -1,6 +1,0 @@
-{
-	"name": "Go + PostgreSQL + Kafka",
-	"dockerComposeFile": "../docker-compose.yml",
-	"service": "go",
-	"workspaceFolder": "/go-transactional-outbox/app"
-}

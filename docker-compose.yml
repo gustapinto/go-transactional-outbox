@@ -6,20 +6,6 @@ volumes:
   kafka_data:
 
 services:
-  go:
-    image: mcr.microsoft.com/devcontainers/go:1-1.23-bookworm
-    tty: true
-    container_name: go-transactional-outbox-go
-    ports:
-      - 3000:3000
-    volumes:
-      - ./:/go-transactional-outbox/app:Z
-    networks:
-      - go-transactional-outbox-network
-    environment:
-      POSTGRES_DSN: "postgresql://go-transactional-outbox:go-transactional-outbox@db:5432/go-transactional-outbox?sslmode=disable"
-      KAFKA_SEEDS: broker:9092
-
   db:
     image: postgres:16.3-alpine
     container_name: go-transactional-outbox-db
@@ -53,3 +39,54 @@ services:
       KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+  order-service:
+    image: golang:1.23.2-alpine3.20
+    tty: true
+    container_name: go-transactional-outbox-order-service
+    working_dir: /go-transactional-outbox/app/order-service/cmd
+    command: go run .
+    volumes:
+      - ./:/go-transactional-outbox/app:Z
+    networks:
+      - go-transactional-outbox-network
+    depends_on:
+      - db
+    environment:
+      POSTGRES_DSN: "postgresql://go-transactional-outbox:go-transactional-outbox@db:5432/go-transactional-outbox?sslmode=disable"
+
+  message-relay-service:
+    image: golang:1.23.2-alpine3.20
+    tty: true
+    container_name: go-transactional-outbox-message-relay-service
+    working_dir: /go-transactional-outbox/app/message-relay-service/cmd
+    restart: unless-stopped
+    command: go run .
+    volumes:
+      - ./:/go-transactional-outbox/app:Z
+    networks:
+      - go-transactional-outbox-network
+    depends_on:
+      - db
+      - broker
+    environment:
+      POSTGRES_DSN: "postgresql://go-transactional-outbox:go-transactional-outbox@db:5432/go-transactional-outbox?sslmode=disable"
+      KAFKA_SEEDS: broker:9092
+
+  inventory-service:
+    image: golang:1.23.2-alpine3.20
+    tty: true
+    container_name: go-transactional-outbox-inventory-service
+    working_dir: /go-transactional-outbox/app/inventory-service/cmd
+    restart: unless-stopped
+    command: go run .
+    volumes:
+      - ./:/go-transactional-outbox/app:Z
+    networks:
+      - go-transactional-outbox-network
+    depends_on:
+      - db
+      - broker
+    environment:
+      POSTGRES_DSN: "postgresql://go-transactional-outbox:go-transactional-outbox@db:5432/go-transactional-outbox?sslmode=disable"
+      KAFKA_SEEDS: broker:9092
