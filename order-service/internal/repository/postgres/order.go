@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -85,12 +86,18 @@ func (o Order) Create(ctx context.Context, title, product string, quantity int64
 		Value:    value,
 	})
 	if err != nil {
-		_ = tx.Rollback()
+		if errRollback := tx.Rollback(); errRollback != nil {
+			return uuid.Nil, errors.Join(err, errRollback)
+		}
+
 		return uuid.Nil, err
 	}
 
 	if err := o.createOrderOutboxEvent(tx, ctx, "ORDER_CREATED", event); err != nil {
-		_ = tx.Rollback()
+		if errRollback := tx.Rollback(); errRollback != nil {
+			return uuid.Nil, errors.Join(err, errRollback)
+		}
+
 		return uuid.Nil, err
 	}
 

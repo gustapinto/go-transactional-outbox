@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"strings"
 	"time"
 
@@ -63,12 +64,18 @@ func (i Inventory) Update(ctx context.Context, productCode string, orderId uuid.
 	}
 
 	if err := i.insertInventoryTransaction(tx, ctx, productCode, orderId, quantity); err != nil {
-		_ = tx.Rollback()
+		if errRollback := tx.Rollback(); errRollback != nil {
+			return errors.Join(err, errRollback)
+		}
+
 		return err
 	}
 
 	if err := i.updateInventory(tx, ctx, productCode, quantity); err != nil {
-		_ = tx.Rollback()
+		if errRollback := tx.Rollback(); errRollback != nil {
+			return errors.Join(err, errRollback)
+		}
+
 		return err
 	}
 
